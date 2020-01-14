@@ -4,9 +4,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+var baseUrl = 'https://static.chorus.ai/api/';
+var userID = '4d79041e-f25f-421d-9e5f-3462459b9934';
+var videoUrl = 'http://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_20mb.mp4';//baseUrl + userID + '.mp4';
+var jsonUrl = baseUrl + userID + '.json';
+
 void main() {
   runApp(
-      VideoPlayerApp(),
+    VideoPlayerApp(),
   );
 }
 
@@ -14,9 +19,10 @@ class VideoPlayerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Video Player Demo',
-      home: VideoPlayerScreen(),
-    );
+        title: 'Video Player Demo',
+        home: Center(
+          child: VideoPlayerScreen(),
+        ));
   }
 }
 
@@ -30,17 +36,12 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
-
   @override
   void initState() {
-    // Create and store the VideoPlayerController. The VideoPlayerController
-    // offers several different constructors to play videos from assets, files,
-    // or the internet.
     _controller = VideoPlayerController.network(
-      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+      videoUrl,
     );
 
-    // Initialize the controller and store the Future for later use.
     _initializeVideoPlayerFuture = _controller.initialize();
 
     // Use the controller to loop the video.
@@ -62,9 +63,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Video Player Demo'),
+        backgroundColor: Colors.blueGrey,
       ),
-      // Use a FutureBuilder to display a loading spinner while waiting for the
-      // VideoPlayerController to finish initializing.
       body: FutureBuilder(
         future: _initializeVideoPlayerFuture,
         builder: (context, snapshot) {
@@ -83,6 +83,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           }
         },
       ),
+//        bottomNavigationBar: Center(
+//        child: Image(
+//          image: AssetImage('images/logo.png'),
+//          height: 50,
+//          width: 80,
+//        ),
+//      ),
+      backgroundColor: Colors.blueGrey.shade200,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Wrap the play or pause in a call to `setState`. This ensures the
@@ -97,6 +105,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             }
           });
         },
+        backgroundColor: Colors.blueGrey,
         // Display the correct icon depending on the state of the player.
         child: Icon(
           _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,

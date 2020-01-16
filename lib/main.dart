@@ -1,13 +1,11 @@
 // My sample Flutter code
 import 'dart:async';
+import 'dart:convert';
+import 'networking/url.dart';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-
-var baseUrl = 'https://static.chorus.ai/api/';
-var userID = '4d79041e-f25f-421d-9e5f-3462459b9934';
-var videoUrl = 'http://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_20mb.mp4';//baseUrl + userID + '.mp4';
-var jsonUrl = baseUrl + userID + '.json';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(
@@ -36,81 +34,125 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
+
+  List chatData;
+
+  Future<String> getChatData() async {
+    http.Response response = await http
+        .get(Uri.encodeFull(jsonUrl), headers: {"Accept": "application/json"});
+
+    this.setState(() {
+      chatData = json.decode(response.body);
+    });
+    return "Success!";
+  }
+
   @override
   void initState() {
     _controller = VideoPlayerController.network(
       videoUrl,
     );
-
     _initializeVideoPlayerFuture = _controller.initialize();
 
-    // Use the controller to loop the video.
     _controller.setLooping(true);
-
     super.initState();
+    this.getChatData();
   }
 
   @override
   void dispose() {
-    // Ensure disposing of the VideoPlayerController to free up resources.
     _controller.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    var screenWidth = MediaQuery.of(context).size.width;
+    var padding = 30.0;
     return Scaffold(
       appBar: AppBar(
         title: Text('Video Player Demo'),
         backgroundColor: Colors.blueGrey,
       ),
-      body: FutureBuilder(
-        future: _initializeVideoPlayerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            // If the VideoPlayerController has finished initialization, use
-            // the data it provides to limit the aspect ratio of the video.
-            return AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              // Use the VideoPlayer widget to display the video.
-              child: VideoPlayer(_controller),
-            );
-          } else {
-            // If the VideoPlayerController is still initializing, show a
-            // loading spinner.
-            return Center(child: CircularProgressIndicator());
-          }
-        },
+      body: Container(
+        child: Column(
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.fromLTRB(padding, padding, padding, 0),
+              child: Text('Moment from meeting with Tow Pillars'),
+            ),
+            Container(
+              margin: EdgeInsets.all(padding),
+              child: FutureBuilder(
+                future: _initializeVideoPlayerFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
+                    );
+                  } else {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
+              decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black54,
+                        offset: Offset(2.0, 2.0),
+                        blurRadius: 5.0,
+                        spreadRadius: 1.0)
+                  ]),
+            ),
+            Container(
+              width: screenWidth - padding * 2,
+              height: 300,
+              margin: EdgeInsets.all(10.0),
+              decoration: BoxDecoration(
+                  color: Colors.blue[200],
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black54,
+                        offset: Offset(2.0, 2.0),
+                        blurRadius: 5.0,
+                        spreadRadius: 1.0)
+                  ]),
+              child: SafeArea(
+                child: new ListView.builder(
+                  itemCount: chatData == null ? 0 : chatData.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return new Card(
+                      child: new Text(chatData[index]["snippet"]),
+                      color: Colors.blue[200],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-//        bottomNavigationBar: Center(
-//        child: Image(
-//          image: AssetImage('images/logo.png'),
-//          height: 50,
-//          width: 80,
-//        ),
-//      ),
       backgroundColor: Colors.blueGrey.shade200,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Wrap the play or pause in a call to `setState`. This ensures the
-          // correct icon is shown.
           setState(() {
-            // If the video is playing, pause it.
             if (_controller.value.isPlaying) {
               _controller.pause();
             } else {
-              // If the video is paused, play it.
               _controller.play();
             }
           });
         },
         backgroundColor: Colors.blueGrey,
-        // Display the correct icon depending on the state of the player.
         child: Icon(
           _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
         ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }

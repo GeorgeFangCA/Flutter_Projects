@@ -1,6 +1,6 @@
 # videoplayer_demo
 
-A new Flutter application.
+This demo app works on iOS and Android well. The video player is only working on device not on simulator.
 
 ## Getting Started
 

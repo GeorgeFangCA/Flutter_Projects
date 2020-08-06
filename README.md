@@ -1,6 +1,6 @@
 # videoplayer_demo
 
-This demo app works on iOS and Android well. The video player is only working on device not on simulator.
+This demo app works on iOS and Android well. The video player is only working on device not on simulator for iOS.
 
 ## Getting Started
 
